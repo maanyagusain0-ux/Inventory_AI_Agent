@@ -11,9 +11,128 @@ st.set_page_config(
     page_title="AI Inventory Forecasting Assistant",
     layout="wide"
 )
+st.markdown("""
+<style>
 
-st.title("🚀 AI-Powered Inventory Forecasting Assistant")
+.stApp{
 
+background:
+radial-gradient(circle at top left,#C8E8FF 0%,transparent 25%),
+radial-gradient(circle at top right,#FFD4EC 0%,transparent 25%),
+linear-gradient(135deg,#F8FBFF,#F4F7FF,#FFF6FD);
+
+background-attachment:fixed;
+
+}
+
+h1,h2,h3{
+    color:#2D2D44;
+}
+
+div[data-testid="stMetric"]{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0px 4px 15px rgba(0,0,0,0.08);
+}
+
+.stButton > button {
+
+    width: 100%;
+    height: 90px;
+
+    background: linear-gradient(
+        135deg,
+        #5B5FEF,
+        #7B2FF7,
+        #9C27B0
+    );
+
+    color: white;
+
+    font-size: 30px !important;
+
+    font-weight: 700;
+
+    border: none;
+
+    border-radius: 18px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0px 8px 25px rgba(91,95,239,0.45);
+
+    transition: all 0.3s ease;
+
+    letter-spacing: 0.8px;
+}
+
+.stButton > button:hover{
+
+    transform: translateY(-4px) scale(1.02);
+
+    box-shadow:
+        0px 15px 35px rgba(91,95,239,0.60);
+
+    background: linear-gradient(
+        135deg,
+        #7B2FF7,
+        #5B5FEF,
+        #FF4D94
+    );
+
+}
+
+.stButton > button:active{
+
+    transform: scale(0.98);
+
+}
+
+.stButton > button p{
+
+    font-size:30px !important;
+
+    font-weight:bold !important;
+
+    color:white !important;
+
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div style="
+background:linear-gradient(90deg,#6C63FF,#7B2FF7,#F72585);
+padding:30px;
+border-radius:20px;
+color:white;
+text-align:center;
+box-shadow:0px 8px 20px rgba(0,0,0,0.15);
+">
+
+<h1>🚀 AI Inventory Forecasting Assistant</h1>
+
+<h4>Smart Demand Forecasting • Inventory Planning • Replenishment Recommendations</h4>
+
+</div>
+""", unsafe_allow_html=True)
+st.markdown("""
+<div style='
+background:white;
+padding:25px;
+border-radius:20px;
+box-shadow:0px 10px 25px rgba(0,0,0,0.08);
+'>
+""",unsafe_allow_html=True)
+
+st.subheader("📂 Uploaded Inventory Dataset")
+
+# Your upload code here
+
+st.markdown("</div>",unsafe_allow_html=True)
 sales_file = st.file_uploader(
     "Upload CSV or Excel File",
     type=["csv", "xlsx"]
@@ -36,14 +155,25 @@ if sales_file is not None:
 
         st.subheader("📂 Uploaded Inventory Dataset")
 
-        st.write(f"**Rows:** {len(df)}")
-        st.write(f"**Columns:** {len(df.columns)}")
+        col1,col2,col3=st.columns(3)
+        with col1:
+            st.metric("📄 Rows",len(df))
+        with col2:
+            st.metric("📑 Columns",len(df.columns))
+        with col3:
+            st.metric("✅ Status","Ready")
 
         st.write("### Columns Detected")
 
         st.write(list(df.columns))
 
-        st.dataframe(df)
+        with st.expander("📋 View Uploaded Dataset",expanded=False):
+
+            st.dataframe(
+            df,
+            use_container_width=True,
+            height=350
+    )
 
     except Exception as e:
 
@@ -137,7 +267,13 @@ if sales_file is not None:
     # Inventory Recommendations
     # -----------------------------
 
-    st.subheader("🎯 Inventory Planning")
+    st.markdown("---")
+
+    st.markdown("""
+    ## 📦 Inventory Planning
+
+    Choose the financial month and expected sales growth.
+    """)
 
     current_month = st.selectbox(
     "Current Financial Month",
@@ -180,7 +316,10 @@ if sales_file is not None:
     15
 )
 
-    if st.button("Generate Inventory Plan"):
+    if st.button(
+    "🚀 Generate Inventory Plan",
+    use_container_width=True
+):
 
         months_elapsed = month_progress[current_month]
         months_remaining = 12 - months_elapsed
@@ -191,6 +330,8 @@ if sales_file is not None:
         months_remaining,
         growth_percent
     )
+
+        st.success("✅ Inventory forecast generated successfully!")
 
         st.subheader("📈 Inventory Projection Report")
         st.dataframe(forecast_df)
