@@ -1,0 +1,15 @@
+venv/
+__pycache__/
+*.pyc
+
+.env
+
+.vscode/
+
+.idea/
+
+.streamlit/
+
+.DS_Store
+
+*.log
