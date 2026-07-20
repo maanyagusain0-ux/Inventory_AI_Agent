@@ -3,7 +3,9 @@ import streamlit as st
 import pandas as pd
 from ollama import Client
 from models.engine import calculate_inventory, detect_column 
+from io import BytesIO
 client = Client(
+    
     host="http://127.0.0.1:11434"
 )
 
@@ -351,6 +353,28 @@ if sales_file is not None:
         st.success("✅ Inventory forecast generated successfully!")
 
         st.subheader("📈 Inventory Projection Report")
+        # ---------------------------------
+        # Download Excel Report
+# ---------------------------------
+
+        output = BytesIO()
+
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            forecast_df.to_excel(
+        writer,
+        index=False,
+        sheet_name="Inventory Report"
+    )
+
+        excel_data = output.getvalue()
+
+        st.download_button(
+        label="📥 Download Inventory Report (Excel)",
+        data=excel_data,
+        file_name="Inventory_Report.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        use_container_width=True
+)
         st.dataframe(forecast_df)
 
         st.subheader("📊 Inventory Planning Summary")
