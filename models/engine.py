@@ -3,18 +3,12 @@ import pandas as pd
 
 def detect_column(df, keywords):
     """
-    Automatically detect a column based on keywords.
+    Detect a column using a list of keywords.
     """
-
-    for col in df.columns:
-
-        col_name = str(col).strip().lower()
-
-        for keyword in keywords:
-
-            if keyword in col_name:
+    for keyword in keywords:
+        for col in df.columns:
+            if keyword.lower() in str(col).strip().lower():
                 return col
-
     return None
 
 
@@ -27,87 +21,93 @@ def calculate_inventory(
 
     df = df.copy()
 
-    # ----------------------------------
-    # Clean Column Names
-    # ----------------------------------
+    # -----------------------------
+    # Clean Columns
+    # -----------------------------
 
-    df.columns = [str(col).strip() for col in df.columns]
+    df.columns = [str(c).strip() for c in df.columns]
 
-    # ----------------------------------
-    # Detect Required Columns
-    # ----------------------------------
+    # -----------------------------
+    # Detect Columns
+    # -----------------------------
 
     style_col = detect_column(
         df,
         [
             "style",
             "style no",
-            "style number",
             "style code"
-        ]
-    )
-
-    size_col = detect_column(
-        df,
-        [
-            "size"
         ]
     )
 
     stock_col = detect_column(
         df,
         [
-            "curr_s",
-            "current stock",
-            "stock",
-            "stock on hand",
             "soh",
-            "avl",
-            "available"
+            "stock on hand",
+            "current stock",
+            "curr_s",
+            "stock",
+            "available",
+            "avl"
         ]
     )
 
     sales_col = detect_column(
         df,
         [
+            "ttl net sales",
+            "total net sales",
+            "net sales",
+            "ttl sales",
+            "total sales",
             "ytd",
-            "ytd sales",
             "sales qty",
             "sales quantity",
-            "sale qty",
             "sales"
         ]
     )
 
-    # ----------------------------------
-    # Validate Columns
-    # ----------------------------------
+    # -----------------------------
+    # Debug
+    # -----------------------------
+
+    print("\n========== DETECTED COLUMNS ==========")
+    print(df.columns.tolist())
+    print("Style :", style_col)
+    print("Stock :", stock_col)
+    print("Sales :", sales_col)
+    print("======================================")
+
+    # -----------------------------
+    # Validation
+    # -----------------------------
 
     if stock_col is None:
         raise Exception(
             f"""
 Current Stock column could not be detected.
 
-Available Columns:
+Columns found:
 
-{list(df.columns)}
+{df.columns.tolist()}
 """
         )
 
     if sales_col is None:
         raise Exception(
             f"""
-Sales/YTD column could not be detected.
+Sales column could not be detected.
 
-Available Columns:
+Columns found:
 
-{list(df.columns)}
+{df.columns.tolist()}
 """
         )
 
-    # ----------------------------------
-    # Convert Numeric Columns
-    # ----------------------------------
+    # -----------------------------
+    # Numeric conversion
+    # -----------------------------
 
     df[stock_col] = pd.to_numeric(
         df[stock_col],
@@ -119,9 +119,9 @@ Available Columns:
         errors="coerce"
     ).fillna(0)
 
-    # ----------------------------------
+    # -----------------------------
     # Inventory Calculations
-    # ----------------------------------
+    # -----------------------------
 
     df["Avg Monthly Sales"] = (
         df[sales_col] / months_elapsed
@@ -152,37 +152,23 @@ Available Columns:
         df[stock_col]
     ).clip(lower=0).round()
 
-    # ----------------------------------
+    # -----------------------------
     # Status
-    # ----------------------------------
+    # -----------------------------
 
-    status = []
+    conditions = []
 
     for _, row in df.iterrows():
 
         if row["Additional Inventory Needed"] > 0:
-
-            status.append("🔴 Reorder Required")
+            conditions.append("🔴 Reorder Required")
 
         elif row["Inventory Left"] <= 30:
-
-            status.append("🟡 Low Stock")
+            conditions.append("🟡 Low Stock")
 
         else:
+            conditions.append("🟢 Healthy")
 
-            status.append("🟢 Healthy")
-
-    df["Status"] = status
-
-    # ----------------------------------
-    # Print Detected Columns
-    # ----------------------------------
-
-    print("\n========== DETECTED COLUMNS ==========")
-    print("Style Column :", style_col)
-    print("Size Column  :", size_col)
-    print("Stock Column :", stock_col)
-    print("Sales Column :", sales_col)
-    print("======================================\n")
+    df["Status"] = conditions
 
     return df

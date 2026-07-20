@@ -2,7 +2,7 @@ from models.forecast_agent import forecast_sales
 import streamlit as st
 import pandas as pd
 from ollama import Client
-from models.engine import calculate_inventory 
+from models.engine import calculate_inventory, detect_column 
 client = Client(
     host="http://127.0.0.1:11434"
 )
@@ -146,7 +146,10 @@ if sales_file is not None:
         if sales_file.name.endswith(".csv"):
             df = pd.read_csv(sales_file)
         else:
-            df = pd.read_excel(sales_file)
+            df = pd.read_excel(
+                sales_file,
+                header=1
+            )
 
         df.columns = [str(col).strip() for col in df.columns]
         df= df.dropna(axis=1, how='all')
@@ -185,7 +188,21 @@ if sales_file is not None:
     # -----------------------------
 
     date_col = None
-    sales_col = None
+    sales_col = detect_column(
+    df,
+    [
+        "ttl net sales",
+        "total net sales",
+        "net sales",
+        "ttl sales",
+        "total sales",
+        "ytd",
+        "sales qty",
+        "sales quantity",
+        "sale qty",
+        "sales"
+    ]
+)
     category_col = None
     price_col = None
 
@@ -338,7 +355,18 @@ if sales_file is not None:
 
         st.subheader("📊 Inventory Planning Summary")
 
-        stock_column = None
+        stock_col = detect_column(
+    df,
+    [
+        "soh",
+        "stock on hand",
+        "current stock",
+        "curr_s",
+        "available",
+        "avl",
+        "stock"
+    ]
+)
 
         for col in forecast_df.columns:
 
