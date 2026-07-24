@@ -144,7 +144,7 @@ Columns found:
 
     df["Inventory Left"] = (
         df[stock_col] -
-        df["Projected Annual Demand"]
+        df["Forecast Remaining"]
     ).round()
 
     df["Additional Inventory Needed"] = (
